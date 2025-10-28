@@ -15,6 +15,7 @@ library(lubridate)
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
+library(patchwork)
 
 ##############edge black data set###########
 edge_bla <- na.omit(edge_bla)
@@ -219,14 +220,12 @@ ggplot(edge_blk_pcp_2_13, aes(x = DAY, y = mean_vwc)) +
 ###FACET WRAP PRECIP GRAPH WITH DAY on x
 ?facet_wrap
 
-library(ggplot2)
-install.packages("patchwork")
-library(patchwork)
+
 
 
 ###ADD STARS
 ##all years 
-p_vwc <- ggplot(edge_blk_pcp_2, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4, levels = 0.95) +
   labs(y = "Mean VWC") +
@@ -238,7 +237,7 @@ p_pcp <- ggplot(edge_blk_pcp_2, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2013
-p_vwc <- ggplot(edge_blk_pcp_2_13, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_13, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -250,7 +249,7 @@ p_pcp <- ggplot(edge_blk_pcp_2_13, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2014
-p_vwc <- ggplot(edge_blk_pcp_2_14, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_14, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -262,7 +261,7 @@ p_pcp <- ggplot(edge_blk_pcp_2_14, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2015
-p_vwc <- ggplot(edge_blk_pcp_2_15, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_15, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -274,7 +273,7 @@ p_pcp <- ggplot(edge_blk_pcp_2_15, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2016
-p_vwc <- ggplot(edge_blk_pcp_2_16, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_16, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -286,7 +285,7 @@ p_pcp <- ggplot(edge_blk_pcp_2_16, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2017
-p_vwc <- ggplot(edge_blk_pcp_2_17, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_17, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -298,7 +297,7 @@ p_pcp <- ggplot(edge_blk_pcp_2_17, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2018
-p_vwc <- ggplot(edge_blk_pcp_2_18, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_18, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -310,7 +309,7 @@ p_pcp <- ggplot(edge_blk_pcp_2_18, aes(x = DAY, y = PRECIP)) +
 p_pcp / p_vwc
 
 ##edge black precip and vwc 2019
-p_vwc <- ggplot(edge_blk_pcp_2_19, aes(x = DAY, y = mean_vwc)) +
+p_vwc <- ggplot(edge_blk_pcp_2_19, aes(x = DAY, y = mean_vwc, color = Treatment)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "loess", se = TRUE, span = 0.4, alpha = 0.4) +
   labs(y = "Mean VWC") +
@@ -437,7 +436,4 @@ ggscatter(edge_blk_pcp, x = "season.precip", y = "VWC", size = 0.5,
           xlab = "precip",
           ylab = "VWC")  
 
-
-git init
-git remote add origin https://github.com/username/reponame
 
