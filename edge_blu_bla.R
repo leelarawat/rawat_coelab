@@ -1,6 +1,6 @@
 setwd("~/Desktop/coelab")
-edge_bla <- read.csv("~/Desktop/coelab/edge data/EDGE_Black_2013_thru_20191014_VWC_cleanedByRFB_20250924.csv")
-edge_blu <- read.csv("~/Desktop/coelab/edge data/EDGE_Blue_2013_thru_20191014_VWC_cleanedByRFB_20250924.csv")
+edge_black <- read.csv("~/Desktop/coelab/edge data/EDGE_Black_2013_thru_20191014_VWC_cleanedByRFB_20250924.csv")
+edge_blue <- read.csv("~/Desktop/coelab/edge data/EDGE_Blue_2013_thru_20191014_VWC_cleanedByRFB_20250924.csv")
 
 ##Note, for EDGE, ESR = event size reduction (drought)
 ###REN = reduced event number (delayed monsoon). also DRT, delayed. 
@@ -18,12 +18,11 @@ library(tidyverse)
 library(patchwork)
 
 ##############edge black data set###########
-edge_bla <- na.omit(edge_bla)
+edge_black <- na.omit(edge_black)
 
-edge_bla$TIMESTAMP <- as.POSIXct(edge_bla$TIMESTAMP, format = "%m/%d/%y %H:%M")
-edge_bla$DAY <- as.Date(edge_bla$TIMESTAMP)
-edge_bla$MONTH <- factor(format(edge_bla$TIMESTAMP, "%b"), levels = month.abb)
-head(edge_bla)
+edge_black$TIMESTAMP <- as.POSIXct(edge_black$TIMESTAMP, format = "%m/%d/%y %H:%M")
+edge_black$DAY <- as.Date(edge_black$TIMESTAMP)
+edge_black$MONTH <- factor(format(edge_black$TIMESTAMP, "%b"), levels = month.abb)
 
 cols <- c('P27CON_VWC45', 'P18CON_VWC45', 'P11CON_VWC45',
           'P1CON_VWC45', 'P1CON_VWC45', 'P17CON_VWC45',
@@ -37,14 +36,14 @@ cols <- c('P27CON_VWC45', 'P18CON_VWC45', 'P11CON_VWC45',
           'P5DRT_VWC45','P12DRT_VWC45', 'P25DRT_VWC45', 'P30DRT_VWC45',
           'P14DRT_VWC45')
 
-edge_bla_long <- edge_bla %>%
+edge_black <- edge_black %>%
   pivot_longer(cols = all_of(cols),
     names_to = "OGLabel",
     values_to = "VWC") %>% 
   mutate(Plot = str_extract(OGLabel, "P\\d+"),
     Treatment = str_extract(OGLabel, "CON|DRT|ESR"))
 
-edge_black <- edge_bla_long %>% 
+edge_black <- edge_black %>% 
   select(TIMESTAMP, DAY, MONTH, OGLabel, Treatment, Plot, VWC)
 
 edge_black <- edge_black %>%
@@ -327,19 +326,96 @@ edge_black <- edge_black %>%
   mutate(year = year(TIMESTAMP))
 install.packages("lme4")
 library(lme4)
+edge_black$Treatment <- relevel(edge_black$Treatment, ref = "Edge")
+edge_black$MONTH <- relevel(edge_black$MONTH, ref = "July")
 lmer(VWC ~ Treatment * MONTH + (1|year), data = edge_black)
 lmer(VWC ~ Treatment * MONTH + (1|Plot), data = edge_black)
-lmer(VWC ~ Treatment * MONTH + (1|year/Plot), data = edge_black)
+lm_try1 <- lmer(VWC ~ Treatment * MONTH + (1|year/Plot), data = edge_black)
+summary(lm_try1)
 summary(blk_lm)
-###plot nested with year
+levels(edge_black$Treatment)
+levels(edge_black$MONTH)
+
+
+#########shapiro test ############
+edge_black_CON <- edge_black %>% filter(!is.na(VWC))
+edge_black_CON <- edge_black %>% 
+  filter(Treatment == "CON")
+
+edge_black_ESR <- edge_black %>% filter(!is.na(VWC))
+edge_black_ESR <- edge_black %>% 
+  filter(Treatment == "ESR")
+
+edge_black_DRT <- edge_black %>% filter(!is.na(VWC))
+edge_black_DRT <- edge_black %>% 
+  filter(Treatment == "DRT")
+
+shapiro.test(sample(edge_black_CON$VWC, 5000))
+shapiro.test(sample(edge_black_ESR$VWC, 5000))
+shapiro.test(sample(edge_black_DRT$VWC, 5000))
+####SUPER LOW P VALUE = NOT NORMAL
+
+anova_test(edge_black,(VWC~Treatment))
+anova_test(edge_black,(VWC~Block))
+anova_test(edge_black,(VWC~Plot))
+
+
+library(lme4)
+try1_yr <- lmer(VWC ~ Treatment * year + (1|Plot), data = edge_black)
+summary(try1_yr)
+try1_mth <- lmer(VWC ~ Treatment * MONTH + (1|Plot), data = edge_black)
+summary(try1_mth)
+
+
+anova_treat <- aov(VWC ~ Treatment * year + (1|Plot), data = edge_black)
+summary(anova_treat)
+TukeyHSD(anova_treat, "Plot")
+
+library(dplyr)
+library(ggplot2)
+
+plot_means <- edge_black %>%
+  group_by(Plot, Treatment) %>%
+  summarise(mean_VWC = mean(VWC, na.rm = TRUE))
+
+ggplot(plot_means, aes(x = reorder(Plot, mean_VWC), y = mean_VWC, fill = Treatment)) +
+  geom_col() + 
+  coord_flip() +
+  labs(x = "Plot", y = "Mean VWC", title = "Mean VWC by Plot and Treatment")
+
+month_means <- edge_black %>%
+  group_by(MONTH) %>%
+  filter(!is.na(MONTH)) %>% 
+  summarise(mean_VWC = mean(VWC, na.rm = TRUE))
+ggplot(month_means, aes(x = reorder(MONTH, mean_VWC), y = mean_VWC)) +
+  geom_col(fill = "lightblue") + 
+  coord_flip() +
+  labs(x = "Month", y = "Mean VWC", title = "Mean VWC by Month")
+
+ggplot(edge_black, aes(x= VWC, y = MONTH)) + 
+  geom_col()
+
+year_means <- edge_black %>%
+  group_by(year, Treatment) %>%
+  filter(!is.na(year)) %>% 
+  summarise(mean_VWC = mean(VWC, na.rm = TRUE))
+ggplot(year_means, aes(x = reorder(year, mean_VWC), y = mean_VWC)) +
+  geom_col(fill = "lightblue") + 
+  coord_flip() +
+  labs(x = "Year", y = "Mean VWC", title = "Mean VWC by Year and Treatment")
+
 
 ############plot and VWC#########################
 edge_black$Plot <- factor(edge_black$Plot, levels = paste0("P", 1:30))
 ggplot(edge_black, aes(x = VWC, y = Plot)) + 
-       geom_point(color = "lightblue") + 
+       geom_violin(color = "lightblue") + 
   #boxplot or violin plot, to show variability 
   theme_minimal()
-?geom_col
+ggplot(edge_black, aes(x = Plot, y = VWC, fill = Treatment)) +
+  geom_boxplot() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "VWC by Plot and Treatment")
 
 ################EDGE BLUE DATASET still needs to be edited###############
 edge_blu <- na.omit(edge_bla)
@@ -435,5 +511,8 @@ ggscatter(edge_blk_pcp, x = "season.precip", y = "VWC", size = 0.5,
           add = "reg.line", conf.int = TRUE, cor.coef = TRUE, 
           xlab = "precip",
           ylab = "VWC")  
+
+
+
 
 
